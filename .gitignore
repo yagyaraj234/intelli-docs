@@ -9,7 +9,7 @@
 .account.json
 .env
 server/node_modules
-server/dist
+# server/dist
 
 # testing
 /coverage

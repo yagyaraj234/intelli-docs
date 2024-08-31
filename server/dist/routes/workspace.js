@@ -1,0 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const workspace_1 = require("controller/workspace");
+const router = (0, express_1.Router)();
+router.post("/workspace", workspace_1.createWorkspace);
+router.delete("/workspace/:id", workspace_1.deleteWorkspace);
+router.get("/workspace/:id", workspace_1.getWorkspace);
+router.get("/workspaces", workspace_1.getAllWorkspaces);
+exports.default = router;
