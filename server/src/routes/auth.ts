@@ -5,7 +5,7 @@ import {
   getGoogleAuthURL,
   getGoogleUser,
   createFirebaseAccount,
-} from "utils/auth/auth";
+} from "../utils/auth/auth";
 
 interface CustomSession extends SessionData {
   token?: string;
