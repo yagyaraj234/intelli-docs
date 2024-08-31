@@ -1,5 +1,5 @@
 "use client";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,11 +12,29 @@ import {
 import Link from "next/link";
 import { MountainIcon, CheckIcon, XIcon, HelpCircleIcon } from "lucide-react";
 
+const names = ["Code", "Data", "Files", "Images", "Videos"];
+
 export default function EnhancedLandingPage() {
+  const [name, setName] = useState("Code");
   const featuresRef = useRef(null);
   const pricingRef = useRef(null);
   const aboutRef = useRef(null);
   const helpRef = useRef(null);
+
+  const handleNameChange = () => {
+    return setInterval(() => {
+      const randomName = names[Math.floor(Math.random() * names.length)];
+      setName(randomName);
+    }, 2000);
+  };
+
+  useEffect(() => {
+    const id = handleNameChange();
+
+    return () => {
+      clearInterval(id);
+    };
+  }, []);
 
   const scrollToSection = (ref: any) => {
     ref.current.scrollIntoView({ behavior: "smooth" });
@@ -27,7 +45,7 @@ export default function EnhancedLandingPage() {
       <header className="px-4 lg:px-6 h-14 flex items-center justify-between sticky top-0 bg-white z-50 shadow-sm">
         <Link className="flex items-center justify-center" href="#">
           <MountainIcon className="h-6 w-6 mr-2" />
-          <span className="font-bold">RAG Chat App</span>
+          <span className="font-bold">Intelli Talk</span>
         </Link>
         <nav className="flex gap-4 sm:gap-6">
           <button
@@ -62,8 +80,10 @@ export default function EnhancedLandingPage() {
             <div className="flex flex-col items-center space-y-4 text-center text-white">
               <div className="space-y-2">
                 <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl/none">
-                  Chat with Your Documents, Powered by AI
+                  Chat with Your {name}
+                  <br />
                 </h1>
+                <p className="text-lg">Powered by AI</p>
                 <p className="mx-auto max-w-[700px] text-xl md:text-2xl">
                   Unlock the power of your data with our advanced RAG-powered
                   chat application.
@@ -71,9 +91,11 @@ export default function EnhancedLandingPage() {
               </div>
               <div className="space-y-2">
                 <p className="text-lg font-medium">Get started now!</p>
-                <div className="flex flex-col sm:flex-row gap-2 max-w-sm mx-auto">
-                  <Button variant="secondary">Log In</Button>
-                  <Button variant="default">Sign Up</Button>
+                <div className="flex items-center justify-center  bg-gray-100 dark:bg-gray-700">
+                  <button className="flex items-center bg-white dark:bg-gray-900 border border-gray-300 rounded-lg shadow-md px-6 py-2 text-sm font-medium text-gray-800 dark:text-white hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                    <img src="/public/icon/google.png" alt="google-icon" />
+                    <span>Continue with Google</span>
+                  </button>
                 </div>
               </div>
               <Button variant="link" className="text-white">
@@ -233,11 +255,11 @@ export default function EnhancedLandingPage() {
         <section ref={aboutRef} className="w-full py-12 md:py-24 lg:py-32">
           <div className="container px-4 md:px-6">
             <h2 className="text-3xl font-bold text-center mb-12">
-              About RAG Chat App
+              About Intelli Talk
             </h2>
             <div className="max-w-3xl mx-auto text-center">
               <p className="text-xl mb-6">
-                RAG Chat App is revolutionizing the way people interact with
+                Intelli Talk is revolutionizing the way people interact with
                 their documents and data. Our mission is to make information
                 retrieval and analysis as simple and intuitive as having a
                 conversation.
@@ -269,7 +291,7 @@ export default function EnhancedLandingPage() {
                     Frequently Asked Questions
                   </h3>
                   <ul className="list-disc pl-5 space-y-2">
-                    <li>How do I upload documents to RAG Chat App?</li>
+                    <li>How do I upload documents to Intelli Talk?</li>
                     <li>What file formats are supported?</li>
                     <li>How can I upgrade my plan?</li>
                     <li>Is my data secure?</li>
@@ -301,7 +323,7 @@ export default function EnhancedLandingPage() {
             </h2>
             <p className="text-xl mb-8">
               Join thousands of satisfied users who have transformed their
-              workflow with RAG Chat App.
+              workflow with Intelli Talk.
             </p>
             <Button size="lg" variant="secondary">
               Start Your Journey Now
@@ -311,7 +333,7 @@ export default function EnhancedLandingPage() {
       </main>
       <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t">
         <p className="text-xs text-gray-500 dark:text-gray-400">
-          © 2023 RAG Chat App. All rights reserved.
+          © 2023 Intelli Talk. All rights reserved.
         </p>
         <nav className="sm:ml-auto flex gap-4 sm:gap-6">
           <Link className="text-xs hover:underline underline-offset-4" href="#">

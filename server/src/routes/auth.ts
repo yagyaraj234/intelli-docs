@@ -23,7 +23,10 @@ router.get("/google/callback", async (req: Request, res: Response) => {
 
   try {
     const googleUser = await getGoogleUser(code);
+    console.log({ googleUser });
     const firebaseUser = await createFirebaseAccount(googleUser);
+
+    console.log({ firebaseUser });
 
     // Create a custom token
     const customToken = await admin.auth().createCustomToken(firebaseUser.uid);

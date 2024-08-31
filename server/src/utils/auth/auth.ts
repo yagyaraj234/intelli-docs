@@ -58,3 +58,5 @@ export async function createFirebaseAccount(googleUser: any) {
     return newUser;
   }
 }
+
+
