@@ -6,8 +6,6 @@ import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import session from "express-session";
 import root from "./routes/index";
 
-const firebase = require("../.account.json");
-
 dotenv.config();
 
 const app = express();
