@@ -5,6 +5,8 @@ import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import session from "express-session";
 import root from "./routes/index";
+import { VercelRequest, VercelResponse } from "@vercel/node";
+import "module-alias/register";
 
 dotenv.config();
 
@@ -142,3 +144,7 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+module.exports = (req: VercelRequest, res: VercelResponse) => {
+  app(req, res);
+};

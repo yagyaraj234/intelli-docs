@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "_moduleAliases": {
+  "@utils": "dist/utils"
+},
   "scripts": {
     "start": "nodemon src/index.ts",
     "build": "rimraf dist && tsc",
