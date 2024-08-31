@@ -16,17 +16,17 @@ app.use(express.json());
 // Initialize Firebase
 admin.initializeApp({
   credential: admin.credential.cert({
-    projectId: firebase.project_id,
-    privateKey: firebase.private_key?.replace(/\\n/g, "\n"),
-    clientEmail: firebase.client_email,
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    privateKey: process.env.FIREBASE_SECRET?.replace(/\\n/g, "\n"),
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
     // @ts-ignore
-    storageBucket: firebase.storage_bucket,
+    storageBucket: process.env.FIREBASE_BUCKET,
   }),
 });
 
 export const db = admin.firestore();
 const storage = admin.storage();
-export const bucket = storage.bucket("gs://chat-doc-46080.appspot.com");
+export const bucket = storage.bucket(process.env.FIREBASE_BUCKET);
 
 app.get("/", (req, res) => {
   res.send(`Server up and running.`);
@@ -50,7 +50,7 @@ const createUser = async (user: any) => {
     lastLogin: date,
     plan: "free",
     limit: 10,
-    type:""
+    type: "",
   });
 
   const id = user.sub.slice(0, 10);
