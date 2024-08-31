@@ -34,7 +34,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const admin = __importStar(require("firebase-admin"));
-const auth_1 = require("utils/auth/auth");
+const auth_1 = require("../utils/auth/auth");
 const router = (0, express_1.Router)();
 router.get("/google", (req, res) => {
     res.redirect((0, auth_1.getGoogleAuthURL)());
