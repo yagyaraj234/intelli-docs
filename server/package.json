@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "_moduleAliases": {
-  "@utils": "dist/utils"
-},
+    "@utils": "dist/utils"
+  },
   "scripts": {
     "start": "nodemon src/index.ts",
     "build": "rimraf dist && tsc",
@@ -24,12 +24,17 @@
   "dependencies": {
     "@firebase/app": "^0.9.29",
     "@firebase/firestore": "^4.7.1",
+    "@types/cookie-parser": "^1.4.7",
+    "@types/cors": "^2.8.17",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "express-session": "^1.18.0",
     "firebase": "^10.13.1",
     "firebase-admin": "^12.4.0",
     "google-auth-library": "^9.14.0",
+    "jsonwebtoken": "^9.0.2",
     "module-alias": "^2.2.3",
     "multer": "^1.4.5-lts.1",
     "nanoid": "^5.0.7",

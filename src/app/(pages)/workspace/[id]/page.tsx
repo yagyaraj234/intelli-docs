@@ -1,6 +1,7 @@
 // @ts-nocheck
 "use client";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { toast, Toaster } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -21,19 +22,66 @@ import {
   Trash2Icon,
 } from "lucide-react";
 import { CreateWorkspaceForm } from "@/components/workspaces/workspace-form";
+import {
+  createWorkspace,
+  getAllWorkspaces,
+  getWorkspace,
+} from "@/services/workspace";
+import { useParams, useRouter } from "next/navigation";
+import { useWorkspace } from "@/hooks/use-workspace";
 
 export default function ChatWorkspace() {
+  const {
+    workspace: currentWorkspace,
+    workspaces,
+    setWorkspaces,
+    setCurrentWorkspace,
+  } = useWorkspace();
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState("");
-  const [workspaces, setWorkspaces] = useState([]);
-  const [currentWorkspace, setCurrentWorkspace] = useState(null);
+  // const [workspaces, setWorkspaces] = useState([]);
+  // const [currentWorkspace, setCurrentWorkspace] = useState(null);
   const [showCreateWorkspaceForm, setShowCreateWorkspaceForm] = useState(false);
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
   const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
-  // const { toast } = useToast();
+
+  const id = useParams().id;
+  const router = useRouter();
+
+  console.log(id);
+
+  const getWorkspaces = async () => {
+    if (workspaces.length > 0) return;
+    try {
+      const res = await getAllWorkspaces();
+
+      if (res.status === "success") {
+        setWorkspaces(res.data);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const getWorkspaceById = async (id) => {
+    try {
+      const res = await getWorkspace(id);
+
+      if (res.status === "success") {
+        setCurrentWorkspace(res.data);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    getWorkspaces();
+    getWorkspaceById(id);
+  }, []);
 
   const handleSendMessage = () => {
     if (inputMessage.trim()) {
@@ -56,15 +104,32 @@ export default function ChatWorkspace() {
     // });
   };
 
-  const handleCreateWorkspace = (workspaceData) => {
-    const newWorkspace = {
-      id: Date.now(),
+  const handleCreateWorkspace = async (workspaceData) => {
+    const payload = {
       name: workspaceData.name,
       role: workspaceData.role,
-      youtubeUrl: workspaceData.youtubeUrl,
+      url: workspaceData.youtubeUrl || "",
     };
-    setWorkspaces([...workspaces, newWorkspace]);
-    setCurrentWorkspace(newWorkspace);
+
+    const response = await createWorkspace(
+      payload.name,
+      payload.role,
+      payload.url
+    );
+
+    if (response.status === "success") {
+      setWorkspaces([...workspaces, response.data]);
+      setCurrentWorkspace(response.data);
+      toast.success(response.message);
+
+      return;
+    }
+
+    toast.error(response.message);
+  };
+
+  const switchWorkspace = (workspace) => {
+    router.push(`/workspace/${workspace.id}`);
   };
 
   const handleDragOver = (e) => {
@@ -86,8 +151,24 @@ export default function ChatWorkspace() {
   const toggleLeftSidebar = () => setLeftSidebarOpen(!leftSidebarOpen);
   const toggleRightSidebar = () => setRightSidebarOpen(!rightSidebarOpen);
 
+  const renderIcon = (type) => {
+    console.log(type);
+    type = type?.toLowerCase();
+    switch (type) {
+      case "code":
+        return <CodeIcon />;
+      case "File discussion":
+        return <FileTextIcon />;
+      case "youtube":
+        return <YoutubeIcon />;
+      default:
+        return <FileIcon />;
+    }
+  };
+
   return (
     <div className="flex h-screen overflow-hidden">
+      <Toaster position="top-right" closeButton />
       {/* Left Sidebar */}
       <div
         className={`bg-gray-100 transition-all duration-300 ease-in-out ${
@@ -119,15 +200,11 @@ export default function ChatWorkspace() {
                 {workspaces.map((workspace) => (
                   <Button
                     key={workspace.id}
-                    variant={
-                      currentWorkspace?.id === workspace.id
-                        ? "default"
-                        : "ghost"
-                    }
-                    className="w-full justify-start"
-                    onClick={() => setCurrentWorkspace(workspace)}
+                    variant={id === workspace.id ? "outline" : "link"}
+                    className="w-full justify-start gap-4 truncate"
+                    onClick={() => switchWorkspace(workspace)}
                   >
-                    <FileIcon className="mr-2 h-4 w-4" />
+                    {renderIcon(workspace.role)}
                     {workspace.name}
                   </Button>
                 ))}
@@ -166,9 +243,14 @@ export default function ChatWorkspace() {
             <Textarea
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSendMessage();
+                }
+              }}
               placeholder="Type your message..."
-              className="flex-1 border border-black rounded-lg p-2"
-              rows={2}
+              className="flex-1 border border-black rounded-lg p-2 h-10"
             />
             <Button onClick={handleSendMessage}>
               <SendIcon className="h-4 w-4" />

@@ -1,17 +1,26 @@
 import express, { Request, Response } from "express";
+import cors from "cors";
+import cookieParser from "cookie-parser";
 import * as admin from "firebase-admin";
 import dotenv from "dotenv";
 import passport from "passport";
+import JWT from "jsonwebtoken";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import session from "express-session";
 import root from "./routes/index";
 import { VercelRequest, VercelResponse } from "@vercel/node";
 import "module-alias/register";
+import { corsOptions } from "./config/cors";
+import { auth } from "./middleware/auth";
+import { generateToken } from "./utils/token/token";
+import { ApiSuccess } from "./utils/response/success";
 
 dotenv.config();
 
 const app = express();
 app.use(express.json());
+app.use(cors(corsOptions));
+app.use(cookieParser());
 
 // Initialize Firebase
 admin.initializeApp({
@@ -25,6 +34,9 @@ admin.initializeApp({
 });
 
 export const db = admin.firestore();
+db.settings({
+  ignoreUndefinedProperties: true,
+});
 const storage = admin.storage();
 export const bucket = storage.bucket(process.env.FIREBASE_BUCKET);
 
@@ -72,19 +84,27 @@ const createUser = async (user: any) => {
 };
 
 // Passport setup
-
 passport.use(
   new GoogleStrategy(
     {
       clientID: process.env.GOOGLE_CLIENT_ID || "",
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
-      callbackURL: "http://localhost:8000/auth/google/callback",
+      callbackURL: "/api/v1/auth/google/callback",
     },
     async (accessToken, refreshToken, profile, done) => {
       await createUser(profile._json);
       return done(null, profile);
     }
   )
+);
+
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "",
+    resave: false,
+    saveUninitialized: true,
+    cookie: { maxAge: 60 * 60 * 1000 * 24 * 30 },
+  } as session.SessionOptions)
 );
 
 passport.serializeUser((user, done) => {
@@ -96,34 +116,71 @@ passport.deserializeUser((user, done) => {
   done(null, user);
 });
 
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET || "",
-    resave: false,
-    saveUninitialized: true,
-    cookie: { maxAge: 60 * 60 * 1000 * 10 },
-  } as session.SessionOptions)
+app.get("/api/v1/auth", async (req, res) => {
+  try {
+    const token =
+      req.cookies["intelli-doc-token"] ||
+      req.headers.authorization?.split(" ")[1];
+
+    if (!token) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    const decoded = await JWT.verify(token, process.env.JWT_SECRET || "");
+    if (!decoded) return res.status(401).json({ message: "Unauthorized" });
+
+    // @ts-ignore
+    const userRef = await db.collection("users").doc(decoded?.uid).get();
+
+    if (!userRef.exists) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    let user = await userRef.data();
+
+    user = {
+      ...user,
+      workspace: user?.id.slice(0, 10),
+    };
+
+    return res.status(200).json(ApiSuccess("User authenticated", user));
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+app.get(
+  "/api/v1/auth/google",
+  passport.authenticate("google", {
+    scope: ["profile", "email"],
+  })
 );
 
 app.get(
-  "/auth/google",
-  passport.authenticate("google", { scope: ["profile", "email"] })
-);
-
-app.get(
-  "/auth/google/callback",
+  "/api/v1/auth/google/callback",
   passport.authenticate("google", { failureRedirect: "/" }),
   async (req, res) => {
     const user = req.user;
+    if (!user) return;
     // @ts-ignore
     const workspaceId = user.id.slice(0, 10);
 
-    res.redirect(`/workspace/${workspaceId}`);
+    const token = await generateToken({
+      // @ts-ignore
+      email: user?.email,
+      // @ts-ignore
+      uid: user?.id,
+    });
+
+    res.cookie("intelli-doc-token", token, {
+      maxAge: 60 * 60 * 1000 * 24 * 30,
+      httpOnly: true,
+    });
+    res.redirect(`${process.env.APP_URL}workspace/${workspaceId}`);
   }
 );
 
 // Logout route
-app.get("/logout", (req: Request, res: Response) => {
+app.get("/api/v1/logout", (req: Request, res: Response) => {
   // @ts-ignore
   req.logOut();
   // @ts-ignore
@@ -138,7 +195,7 @@ app.get("/logout", (req: Request, res: Response) => {
   });
 });
 
-app.use("/api/v1/", root);
+app.use("/api/v1/", auth, root);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

@@ -1,29 +1,33 @@
 import { Request, Response } from "express";
-import { ApiError } from "utils/response/error";
-import { ApiSuccess } from "utils/response/success";
-import { nanoid } from "nanoid";
+// import { nanoid } from "nanoid";
 
-let db: any;
+import { db } from "../index";
+import { ApiError } from "../utils/response/error";
+import { ApiSuccess } from "../utils/response/success";
+
+export const generateId = () => {
+  return Math.random().toString(36).substr(2, 9);
+};
 
 export const createWorkspace = async (req: Request, res: Response) => {
-  const { name, type, url, uid } = req.body;
+  const { name, role, url, uid } = req.body;
   try {
     const userRef = await db.collection("users").doc(uid);
 
     const workspaces = await userRef.collection("workspaces").get();
 
-    if (workspaces.size >= 3) {
+    if (workspaces.size >= 5) {
       return res.status(400).json(ApiError("You have reached the limit.", 400));
     }
 
-    const id = nanoid(6);
+    const id = generateId();
 
     const date = new Date().toISOString();
     const data = {
       id,
       name,
-      type,
-      url,
+      role,
+      url: url || "",
       createdAt: date,
       updatedAt: date,
     };
@@ -73,8 +77,9 @@ export const getAllWorkspaces = async (req: Request, res: Response) => {
 
     const data: { id: string; name: string }[] = [];
     workspaces.forEach((doc: any) => {
-      const { id, name } = doc.data();
-      data.push({ id, name });
+      const { id, name, role } = doc.data();
+      // @ts-ignore
+      data.push({ id, name, role });
     });
 
     return res.status(200).json(ApiSuccess("Workspaces fetched", data));
@@ -85,9 +90,10 @@ export const getAllWorkspaces = async (req: Request, res: Response) => {
 };
 
 export const getWorkspace = async (req: Request, res: Response) => {
-  const { user, id } = req.body;
+  const { uid } = req.body;
+  const { id } = req.params;
   try {
-    const userRef = await db.collection("users").doc(user.uid);
+    const userRef = await db.collection("users").doc(uid);
     const workspace = await userRef.collection("workspaces").doc(id).get();
 
     if (!workspace.exists) {

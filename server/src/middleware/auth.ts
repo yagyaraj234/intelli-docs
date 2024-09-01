@@ -1,23 +1,36 @@
-// import { FirebaseApp } from "@firebase/app";
 import { Request, Response, NextFunction } from "express";
-import { ApiError } from "utils/response/error";
-export const auth = async (req: Request, res: Response, next: NextFunction) => {
+import Jwt from "jsonwebtoken";
+import { ApiError } from "../utils/response/error";
+
+// Middleware to check if the user is logged in
+export const auth = (req: Request, res: Response, next: NextFunction) => {
   try {
-    const token = req.headers.authorization?.split(" ")[1];
+    const token =
+      req.cookies["intelli-doc-token"] ||
+      req.headers.authorization?.split(" ")[1];
 
     if (!token) {
-      return res.status(401).json({
-        status: "error",
-        message: "Unauthorized",
-        code: 401,
-      });
+      return res
+        .status(401)
+        .json(ApiError("You are not authorized to access this route", 401));
     }
 
-    req.body.uid = "fdsjkn";
+    const decoded = Jwt.verify(token, process.env.JWT_SECRET as string);
 
-    // const user = await firebaseApp.auth().verifyIdToken(token);
+    if (!decoded) {
+      return res
+        .status(401)
+        .json(ApiError("You are not authorized to access this route", 401));
+    }
+
+    req.user = decoded as any;
+    // @ts-ignore
+    req.body.uid = decoded.uid as string;
+
+    next();
   } catch (error) {
-    console.log(error);
-    return res.status(500).json(ApiError("Internal server error", 500, error));
+    return res
+      .status(401)
+      .json(ApiError("You are not authorized to access this route", 401));
   }
 };
