@@ -1,4 +1,4 @@
-const APP_ENV = process.env.APP_ENV || "development";
+const APP_ENV = process.env.NEXT_PUBLIC_APP_ENV || "development";
 
 export const API_URL =
   APP_ENV === "development"
