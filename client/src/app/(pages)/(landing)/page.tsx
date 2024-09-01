@@ -43,14 +43,19 @@ export default function EnhancedLandingPage() {
   };
 
   const checkUserLoggedIn = async () => {
-    const res = await authenticate();
+    try {
+      const res = await authenticate();
 
-    if (res.status === "success") {
-      const workspaceId = res.data.workspace;
-      router.push(`/workspace/${workspaceId}`);
-      // setUser(res.data.w);
+      if (res.status === "success") {
+        const workspaceId = res.data.workspace;
+        router.push(`/workspace/${workspaceId}`);
+        // setUser(res.data.w);
+      }
+    } catch (error) {
+      setLoading(false);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
   useEffect(() => {
     const id = handleNameChange();
@@ -69,9 +74,10 @@ export default function EnhancedLandingPage() {
       <div className="h-screen w-screen p-[16px]">
         <Skeleton className="h-14 w-full" />
 
-        <Skeleton className="h-[60vh] flex items-center justify-center">
-          <Skeleton className="h-14 w-1/2" />
-          <Skeleton className="h-10 w-3/4" />
+        <Skeleton className="h-[60vh] flex items-center justify-center w-full">
+          <div className=" animate-pulse text-black/70">Workbot Chat bot</div>
+          <Skeleton className="h-14 w-1/2 bg-gray-50 " />
+          <Skeleton className="h-10 w-3/4 bg-gray-100 rounded-sm" />
         </Skeleton>
       </div>
     );
@@ -83,7 +89,7 @@ export default function EnhancedLandingPage() {
         <header className="px-4 lg:px-6 h-14 flex items-center justify-between sticky top-0 bg-white z-50 shadow-sm">
           <Link className="flex items-center justify-center" href="#">
             <MountainIcon className="h-6 w-6 mr-2" />
-            <span className="font-bold">Intelli Talk</span>
+            <span className="font-bold">Workbot</span>
           </Link>
           <nav className="flex gap-4 sm:gap-6">
             <button
@@ -302,12 +308,12 @@ export default function EnhancedLandingPage() {
           <section ref={aboutRef} className="w-full py-12 md:py-24 lg:py-32">
             <div className="container px-4 md:px-6">
               <h2 className="text-3xl font-bold text-center mb-12">
-                About Intelli Talk
+                About Workbot
               </h2>
               <div className="max-w-3xl mx-auto text-center">
                 <p className="text-xl mb-6">
-                  Intelli Talk is revolutionizing the way people interact with
-                  their documents and data. Our mission is to make information
+                  Workbot is revolutionizing the way people interact with their
+                  documents and data. Our mission is to make information
                   retrieval and analysis as simple and intuitive as having a
                   conversation.
                 </p>
@@ -338,7 +344,7 @@ export default function EnhancedLandingPage() {
                       Frequently Asked Questions
                     </h3>
                     <ul className="list-disc pl-5 space-y-2">
-                      <li>How do I upload documents to Intelli Talk?</li>
+                      <li>How do I upload documents to Workbot?</li>
                       <li>What file formats are supported?</li>
                       <li>How can I upgrade my plan?</li>
                       <li>Is my data secure?</li>
@@ -370,7 +376,7 @@ export default function EnhancedLandingPage() {
               </h2>
               <p className="text-xl mb-8">
                 Join thousands of satisfied users who have transformed their
-                workflow with Intelli Talk.
+                workflow with Workbot.
               </p>
               <Button size="lg" variant="secondary">
                 Start Your Journey Now
@@ -380,7 +386,7 @@ export default function EnhancedLandingPage() {
         </main>
         <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t">
           <p className="text-xs text-gray-500 dark:text-gray-400">
-            © 2023 Intelli Talk. All rights reserved.
+            © 2023 Workbot. All rights reserved.
           </p>
           <nav className="sm:ml-auto flex gap-4 sm:gap-6">
             <Link
