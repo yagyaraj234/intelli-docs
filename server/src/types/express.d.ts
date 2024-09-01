@@ -1,4 +1,7 @@
+import { Request } from "express";
+
 interface User {
+  email: string;
   uid: string;
 }
 
