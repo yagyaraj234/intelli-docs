@@ -1,5 +1,5 @@
 export const corsOptions = {
-  origin: process.env.APP_URL, // Replace with your frontend URL
+  origin: "https://workbot.site", // Replace with your frontend URL
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
   allowedHeaders: [
