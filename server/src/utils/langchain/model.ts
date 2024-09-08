@@ -1,5 +1,8 @@
 // import { ChatAnthropic } from "@langchain/anthropic";
 import { ChatGroq } from "@langchain/groq";
+import * as dotenv from "dotenv";
+
+dotenv.config();
 
 // export const claudeModel = new ChatAnthropic({
 //   model: "claude-3-haiku-2024030",
@@ -11,5 +14,7 @@ import { ChatGroq } from "@langchain/groq";
 
 export const groqModel = new ChatGroq({
   model: "llama-3.1-70b-versatile",
-  apiKey: "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",
+  maxTokens: 3000,
+  maxRetries: 3,
+  temperature: 0.4,
 });

@@ -2,7 +2,7 @@ import express, { Request, Response } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import * as admin from "firebase-admin";
-import dotenv from "dotenv";
+import * as dotenv from "dotenv";
 import passport from "passport";
 import JWT from "jsonwebtoken";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
@@ -89,7 +89,7 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID || "",
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
-      callbackURL: "/api/v1/auth/google/callback",
+      callbackURL: process.env.GOOGLE_CALLBACK_URL,
     },
     async (accessToken, refreshToken, profile, done) => {
       await createUser(profile._json);

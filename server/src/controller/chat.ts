@@ -21,7 +21,7 @@ export const generate = async (req: Request, res: Response) => {
       .get();
 
     if (!workspaceRef.exists) {
-      return res.json(ApiError("Workspace doesn't exists", 404));
+      return res.status(500).json(ApiError("Workspace doesn't exists", 404));
     }
     // @ts-ignore
     const { history = [] } = workspaceRef.data();

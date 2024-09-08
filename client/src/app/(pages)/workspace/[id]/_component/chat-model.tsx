@@ -9,6 +9,18 @@ import { loadMarkdown } from "@/utils/markdown";
 import ChatLoader from "./chat-loader";
 import { useWorkspace } from "@/hooks/use-workspace";
 
+const errorMessage = ` ## Oops! Something went wrong.
+\n
+Hey there! I'm the solo developer behind WorkBot, and it looks like we've hit a snag.
+\n
+I work on this project in my free time after my 9-5 job, so it might take me a bit to investigate and fix the issue. But don't worry, I'm on it!
+\n
+Thanks for your patience and for using WorkBot. I'll get things back up and running as soon as I can.
+\n
+Check back later for updates, and thanks for understanding!
+
+- Your dedicated WorkBot developer`;
+
 let timer: any;
 export const Chat = () => {
   // @ts-ignore
@@ -89,25 +101,15 @@ export const Chat = () => {
       const stream = await streamChat(input, workspace.id);
       for await (const chunk of stream) {
         setGenerating(false);
+        if (!chunk.text) {
+          handleSetMessage(errorMessage, botMessageId, newMessages);
+          return;
+        }
         message += chunk.text;
         handleSetMessage(message, botMessageId, newMessages);
       }
     } catch (error: any) {
-      handleSetMessage(
-        `# Oops! Something went wrong
-
-Hey there! I'm the solo developer behind WorkBot, and it looks like we've hit a snag.
-
-I work on this project in my free time after my 9-5 job, so it might take me a bit to investigate and fix the issue. But don't worry, I'm on it!
-
-Thanks for your patience and for using WorkBot. I'll get things back up and running as soon as I can.
-
-Check back later for updates, and thanks for understanding!
-
-- Your dedicated WorkBot developer`,
-        botMessageId,
-        newMessages
-      );
+      handleSetMessage(errorMessage, botMessageId, newMessages);
       console.error("Streaming error:", error);
       toast.error(`Error while creating response: ${error.message}`, {
         duration: 5000,
