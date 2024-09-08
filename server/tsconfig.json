@@ -5,6 +5,7 @@
     "rootDir": "./src",
     "outDir": "./dist",
     "esModuleInterop": true,
+    "noUnusedLocals": true,
     "strict": true,
     "baseUrl": "./src",
     "paths": {

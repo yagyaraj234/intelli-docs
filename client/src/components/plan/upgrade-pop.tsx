@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -16,8 +15,10 @@ export function UpgradePopup({ isOpen, onClose }: any) {
         <DialogHeader>
           <DialogTitle>Upgrade to Pro</DialogTitle>
           <DialogDescription>
-            You've reached the upload limit for free users. Upgrade to Pro to
-            unlock more storage and features!
+            You've reached the{" "}
+            <span className="font-semibold text-black">upload/workspace</span>{" "}
+            limit for free users. Upgrade to Pro to unlock more storage and
+            features!
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
@@ -38,6 +39,7 @@ export function UpgradePopup({ isOpen, onClose }: any) {
             onClick={() => {
               /* Implement upgrade logic */
             }}
+            disabled
           >
             Upgrade to Pro
           </Button>

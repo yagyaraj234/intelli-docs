@@ -4,6 +4,7 @@ import { ApiError } from "../utils/response/error";
 
 // Middleware to check if the user is logged in
 export const auth = (req: Request, res: Response, next: NextFunction) => {
+  console.log(req.baseUrl)
   try {
     const token =
       req.cookies["intelli-doc-token"] ||
@@ -12,7 +13,7 @@ export const auth = (req: Request, res: Response, next: NextFunction) => {
     if (!token) {
       return res
         .status(401)
-        .json(ApiError("You are not authorized to access this route", 401));
+        .json(ApiError("You are not authorized to access this route.", 401));
     }
 
     const decoded = Jwt.verify(token, process.env.JWT_SECRET as string);

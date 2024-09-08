@@ -5,8 +5,14 @@ interface UserState {
   id: string;
 }
 
-export const useUser = create((set) => ({
+interface UserStore {
+  user: UserState | null;
+  setUser: (user: UserState | null) => void;
+  logout: () => void;
+}
+
+export const useUser = create<UserStore>((set) => ({
   user: null,
-  setUser: (user: UserState | null) => set({ user }),
+  setUser: (user) => set({ user }),
   logout: () => set({ user: null }),
 }));
