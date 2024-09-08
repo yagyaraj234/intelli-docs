@@ -76,6 +76,7 @@ const createUser = async (user: any) => {
       name: "Personal Workspace",
       createdAt: date,
       updatedAt: date,
+      history: [],
       files: [],
       usage: 0,
     });

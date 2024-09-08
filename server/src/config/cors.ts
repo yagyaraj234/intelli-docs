@@ -1,10 +1,16 @@
 export const corsOptions = {
-  origin: process.env.APP_URL || "http://localhost:3000", // Replace with your frontend URL
+  origin: "http://localhost:3000", // Replace with your frontend URL
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "Connection",
+    "Cache-Control",
+    "Accept",
+  ],
   optionsSuccessStatus: 200,
   preflightContinue: false,
-  exposedHeaders: ["Location"],
+  exposedHeaders: ["Content-Type", "Cache-Control", "Connection"],
   maxAge: 3600,
 };

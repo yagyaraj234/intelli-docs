@@ -34,6 +34,8 @@ import RightPanel from "./_component/rightPanel";
 import { Card } from "@/components/ui/card";
 import { loadMarkdown } from "@/utils/markdown";
 import { ChatLoader } from "./_component/chat-loader";
+import { streamChat } from "@/services/chat/chat";
+import { Chat } from "./_component/chat-model";
 
 export default function ChatWorkspace() {
   const {
@@ -42,20 +44,7 @@ export default function ChatWorkspace() {
     setWorkspaces,
     setCurrentWorkspace,
   } = useWorkspace();
-  const [messages, setMessages] = useState([
-    { type: "user", content: "This is test" },
-    {
-      type: "bot",
-      content: `__Advertisement :)__
-
-- __[pica](https://nodeca.github.io/pica/demo/)__ - high quality and fast image
-  resize in browser.
-- __[babelfish](https://github.com/nodeca/babelfish/)__ - developer friendly
-  i18n with plurals support and easy syntax.
-
-You will like those projects!`,
-    },
-  ]);
+  const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState("");
   const [showUpgradeWorkspace, setShowUpgradeWorkspace] = useState(false);
   const [showCreateWorkspaceForm, setShowCreateWorkspaceForm] = useState(false);
@@ -64,6 +53,7 @@ You will like those projects!`,
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
+  const [generating, setGenerating] = useState<boolean>(false);
 
   const id = useParams().id;
   const router = useRouter();
@@ -86,7 +76,9 @@ You will like those projects!`,
       const res = await getWorkspace(id);
 
       if (res.status === "success") {
+        console.log("success reach");
         setCurrentWorkspace(res.data);
+        setMessages(res.data.history);
       }
     } catch (error) {
       console.error(error);
@@ -97,14 +89,6 @@ You will like those projects!`,
     getWorkspaces();
     getWorkspaceById(id);
   }, []);
-
-  const handleSendMessage = () => {
-    if (inputMessage.trim()) {
-      setMessages([...messages, { type: "user", content: inputMessage }]);
-      // Here you would typically send the message to your backend for processing
-      setInputMessage("");
-    }
-  };
 
   const handleCreateWorkspace = async (workspaceData) => {
     const payload = {
@@ -162,8 +146,8 @@ You will like those projects!`,
       {/* Left Sidebar */}
       <div
         className={`bg-gray-100 transition-all duration-300 ease-in-out ${
-          leftSidebarOpen ? "w-64" : "w-0"
-        } lg:relative absolute z-10 h-full`}
+          leftSidebarOpen ? "w-64 max-sm:w-32" : "w-0"
+        } lg:relative absolute z-10 h-full `}
       >
         <Button
           variant="ghost"
@@ -188,9 +172,9 @@ You will like those projects!`,
                 }}
               >
                 <PlusIcon className="mr-2 h-4 w-4" />
-                New Workspace
+                <h1 className="max-sm:hidden">New Workspace</h1>
               </Button>
-              <ScrollArea className="h-[calc(100vh-240px)]">
+              <ScrollArea className="h-[calc(100vh-240px)] scrollbar scrollbar-none">
                 <div className="space-y-2">
                   {workspaces.map((workspace) => (
                     <Button
@@ -206,13 +190,13 @@ You will like those projects!`,
                 </div>
               </ScrollArea>
 
-              <Card className="flex justify-center items-center p-2 flex-col gap-2">
+              <Card className="flex justify-center items-center p-2 flex-col gap-2 border border-black">
                 <div className="flex gap-2">
                   <h1 className="flex gap-4 text-clip font-bold text-xl">
                     Workbot
                   </h1>
-                  <div className="uppercase text-[14px] bg-purple-700 px-2 py-1 rounded-full text-sm text-white">
-                    Pro
+                  <div className="uppercase text-[14px] bg-gradient-to-r to-[#A83279] from-[#D38312] px-2 py-1 rounded-full text-sm text-white">
+                    Pro 💎
                   </div>
                 </div>
                 <p className="text-sm">Unlock 10x more features</p>
@@ -226,68 +210,11 @@ You will like those projects!`,
       </div>
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="flex-1 overflow-y-auto p-4">
-          <ScrollArea className="h-full">
-            {messages.map((message, index) => (
-              <div
-                key={index}
-                className={`mb-4 ${
-                  message.type === "user" ? "text-right" : "text-left"
-                }`}
-              >
-                {/* <ChatLoader /> */}
-                <div
-                  className={`inline-block p-2 rounded-lg ${
-                    message.type === "user"
-                      ? "bg-gradient-to-r from-blue-400 to-blue-600 text-white"
-                      : "bg-gray-200"
-                  }`}
-                >
-                  <div
-                    dangerouslySetInnerHTML={{
-                      __html: loadMarkdown(message.content),
-                    }}
-                  />
-
-                  {/* {message.type === "bot" && (
-                    <div className="flex justify-end">
-                      <div className="bg-white outline-black p-1 rounded-md cursor-pointer">
-                        <Copy size={20} />
-                      </div>
-                    </div>
-                  )} */}
-                </div>
-              </div>
-            ))}
-          </ScrollArea>
-        </div>
-        <div className="p-4 border-t">
-          <div className="flex space-x-2">
-            <Textarea
-              value={inputMessage}
-              onChange={(e) => setInputMessage(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSendMessage();
-                }
-              }}
-              placeholder="Type your message..."
-              className="flex-1 border border-black rounded-lg p-2 h-10"
-            />
-            <Button onClick={handleSendMessage}>
-              <SendIcon className="h-4 w-4" />
-              <span className="sr-only">Send</span>
-            </Button>
-          </div>
-        </div>
-      </div>
-
+      <Chat />
       {/* Right Sidebar */}
       <div
         className={`bg-gray-100 transition-all duration-300 ease-in-out ${
-          rightSidebarOpen ? "w-64" : "w-0"
+          rightSidebarOpen ? "w-64 max-sm:hidden" : "w-0"
         } lg:relative absolute right-0 z-10 h-full`}
       >
         {rightSidebarOpen && <RightPanel />}
