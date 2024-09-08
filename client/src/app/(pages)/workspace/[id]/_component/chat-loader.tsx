@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export const ChatLoader = () => {
   const getRandomWidth = () => {
-    return Math.floor(Math.random() * 500) + 50;
+    return Math.floor(Math.random() * 300) + 50;
   };
 
   const getRandomDuration = () => {
@@ -11,11 +11,11 @@ export const ChatLoader = () => {
   };
 
   return (
-    <div className="flex flex-col gap-1">
-      {Array.from({ length: 12 }).map((_, index) => (
+    <div className="flex flex-col gap-1 items-start">
+      {Array.from({ length: 6 }).map((_, index) => (
         <Skeleton
           key={index}
-          className="bg-gradient-to-r  h-[12px]"
+          className=" bg-gray-400  h-[12px]"
           style={{
             width: `${getRandomWidth()}px`,
             animationDuration: `${getRandomDuration()}s`,

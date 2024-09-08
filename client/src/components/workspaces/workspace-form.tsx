@@ -47,6 +47,7 @@ export function CreateWorkspaceForm({
                 value={workspaceName}
                 onChange={(e) => setWorkspaceName(e.target.value)}
                 className="col-span-3"
+                placeholder="Linkedin lead generation"
               />
             </div>
             <RadioGroup
@@ -59,15 +60,15 @@ export function CreateWorkspaceForm({
                 <Label htmlFor="general">General Chat</Label>
               </div>
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="code" id="code" />
+                <RadioGroupItem value="code" id="code" disabled />
                 <Label htmlFor="code">Code Discussion</Label>
               </div>
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="pdf" id="pdf" />
+                <RadioGroupItem value="pdf" id="pdf" disabled />
                 <Label htmlFor="pdf">PDF Analysis</Label>
               </div>
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="youtube" id="youtube" />
+                <RadioGroupItem value="youtube" id="youtube" disabled />
                 <Label htmlFor="youtube">YouTube Video Chat</Label>
               </div>
             </RadioGroup>

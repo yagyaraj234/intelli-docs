@@ -40,7 +40,7 @@ const RightPanel = ({ files }: RightPanelProps) => {
   };
 
   return (
-    <div className="p-4">
+    <div className="p-4 ">
       <Tabs defaultValue="upload" className="">
         <TabsList className="w-full bg-slate-200 border border-black rounded-lg">
           <TabsTrigger value="files" className="flex-1">
