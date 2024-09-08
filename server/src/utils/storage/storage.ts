@@ -1,4 +1,7 @@
-import { bucket } from "index";
+import { bucket } from "../../index";
+import { v4 as uuidv4 } from "uuid";
+
+
 
 export async function uploadFile(
   file: Express.Multer.File,
@@ -9,6 +12,7 @@ export async function uploadFile(
 
   const blobStream = fileUpload.createWriteStream({
     metadata: {
+      id: uuidv4(),
       contentType: file.mimetype,
     },
   });

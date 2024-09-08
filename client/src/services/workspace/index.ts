@@ -43,3 +43,12 @@ export const deleteWorkspace = async (id: string) => {
   const data = await response.json();
   return data;
 };
+
+
+export const createTemporaryWorkspace = async () => {
+  const response = await fetch(`${API_URL}workspaces/temporary`, {
+    method: "POST",
+  });
+  const data = await response.json();
+  return data;
+};

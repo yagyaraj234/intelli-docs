@@ -11,7 +11,6 @@ import root from "./routes/index";
 import { VercelRequest, VercelResponse } from "@vercel/node";
 import "module-alias/register";
 import { corsOptions } from "./config/cors";
-import { auth } from "./middleware/auth";
 import { generateToken } from "./utils/token/token";
 import { ApiSuccess } from "./utils/response/success";
 
@@ -195,7 +194,7 @@ app.get("/api/v1/logout", (req: Request, res: Response) => {
   });
 });
 
-app.use("/api/v1/", auth, root);
+app.use("/api/v1/", root);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

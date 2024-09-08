@@ -8,7 +8,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-// import { useToast } from "@/components/ui/use-toast";
 import {
   FileIcon,
   SendIcon,
@@ -20,6 +19,7 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   Trash2Icon,
+  Copy,
 } from "lucide-react";
 import { CreateWorkspaceForm } from "@/components/workspaces/workspace-form";
 import {
@@ -29,6 +29,11 @@ import {
 } from "@/services/workspace";
 import { useParams, useRouter } from "next/navigation";
 import { useWorkspace } from "@/hooks/use-workspace";
+import { UpgradePopup } from "@/components/plan/upgrade-pop";
+import RightPanel from "./_component/rightPanel";
+import { Card } from "@/components/ui/card";
+import { loadMarkdown } from "@/utils/markdown";
+import { ChatLoader } from "./_component/chat-loader";
 
 export default function ChatWorkspace() {
   const {
@@ -37,10 +42,22 @@ export default function ChatWorkspace() {
     setWorkspaces,
     setCurrentWorkspace,
   } = useWorkspace();
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState([
+    { type: "user", content: "This is test" },
+    {
+      type: "bot",
+      content: `__Advertisement :)__
+
+- __[pica](https://nodeca.github.io/pica/demo/)__ - high quality and fast image
+  resize in browser.
+- __[babelfish](https://github.com/nodeca/babelfish/)__ - developer friendly
+  i18n with plurals support and easy syntax.
+
+You will like those projects!`,
+    },
+  ]);
   const [inputMessage, setInputMessage] = useState("");
-  // const [workspaces, setWorkspaces] = useState([]);
-  // const [currentWorkspace, setCurrentWorkspace] = useState(null);
+  const [showUpgradeWorkspace, setShowUpgradeWorkspace] = useState(false);
   const [showCreateWorkspaceForm, setShowCreateWorkspaceForm] = useState(false);
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
   const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
@@ -50,8 +67,6 @@ export default function ChatWorkspace() {
 
   const id = useParams().id;
   const router = useRouter();
-
-  console.log(id);
 
   const getWorkspaces = async () => {
     if (workspaces.length > 0) return;
@@ -91,19 +106,6 @@ export default function ChatWorkspace() {
     }
   };
 
-  const handleFileUpload = (files) => {
-    const newFiles = Array.from(files).map((file) => ({
-      name: file.name,
-      size: file.size,
-      type: file.type,
-    }));
-    setUploadedFiles([...uploadedFiles, ...newFiles]);
-    // toast({
-    //   title: "Files uploaded",
-    //   description: `${newFiles.length} file(s) have been uploaded successfully.`,
-    // });
-  };
-
   const handleCreateWorkspace = async (workspaceData) => {
     const payload = {
       name: workspaceData.name,
@@ -132,22 +134,6 @@ export default function ChatWorkspace() {
     router.push(`/workspace/${workspace.id}`);
   };
 
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = () => {
-    setIsDragging(false);
-  };
-
-  const handleDrop = (e) => {
-    e.preventDefault();
-    setIsDragging(false);
-    const files = e.dataTransfer.files;
-    handleFileUpload(files);
-  };
-
   const toggleLeftSidebar = () => setLeftSidebarOpen(!leftSidebarOpen);
   const toggleRightSidebar = () => setRightSidebarOpen(!rightSidebarOpen);
 
@@ -168,6 +154,10 @@ export default function ChatWorkspace() {
 
   return (
     <div className="flex h-screen overflow-hidden">
+      <UpgradePopup
+        isOpen={showUpgradeWorkspace}
+        onClose={() => setShowUpgradeWorkspace(false)}
+      />
       <Toaster position="top-right" closeButton />
       {/* Left Sidebar */}
       <div
@@ -184,32 +174,53 @@ export default function ChatWorkspace() {
           {leftSidebarOpen ? <ChevronLeftIcon /> : <ChevronRightIcon />}
         </Button>
         {leftSidebarOpen && (
-          <div className="p-4">
-            <h2 className="text-lg font-semibold mb-4">Workspaces</h2>
-            <Button
-              className="w-full mb-4"
-              onClick={() => {
-                setShowCreateWorkspaceForm(true);
-              }}
-            >
-              <PlusIcon className="mr-2 h-4 w-4" />
-              New Workspace
-            </Button>
-            <ScrollArea className="h-[calc(100vh-120px)]">
-              <div className="space-y-2">
-                {workspaces.map((workspace) => (
-                  <Button
-                    key={workspace.id}
-                    variant={id === workspace.id ? "outline" : "link"}
-                    className="w-full justify-start gap-4 truncate"
-                    onClick={() => switchWorkspace(workspace)}
-                  >
-                    {renderIcon(workspace.role)}
-                    {workspace.name}
-                  </Button>
-                ))}
-              </div>
-            </ScrollArea>
+          <div className="p-4 flex flex-col h-full justify-between">
+            <div>
+              <h2 className="text-lg font-semibold mb-4">Workspaces</h2>
+              <Button
+                className="w-full mb-4"
+                onClick={() => {
+                  if (workspaces.length > 3) {
+                    setShowUpgradeWorkspace(true);
+                    return;
+                  }
+                  setShowCreateWorkspaceForm(true);
+                }}
+              >
+                <PlusIcon className="mr-2 h-4 w-4" />
+                New Workspace
+              </Button>
+              <ScrollArea className="h-[calc(100vh-240px)]">
+                <div className="space-y-2">
+                  {workspaces.map((workspace) => (
+                    <Button
+                      key={workspace.id}
+                      variant={id === workspace.id ? "outline" : "link"}
+                      className="w-full justify-start gap-4 truncate"
+                      onClick={() => switchWorkspace(workspace)}
+                    >
+                      {renderIcon(workspace.role)}
+                      {workspace.name}
+                    </Button>
+                  ))}
+                </div>
+              </ScrollArea>
+
+              <Card className="flex justify-center items-center p-2 flex-col gap-2">
+                <div className="flex gap-2">
+                  <h1 className="flex gap-4 text-clip font-bold text-xl">
+                    Workbot
+                  </h1>
+                  <div className="uppercase text-[14px] bg-purple-700 px-2 py-1 rounded-full text-sm text-white">
+                    Pro
+                  </div>
+                </div>
+                <p className="text-sm">Unlock 10x more features</p>
+                <Button className="w-full cursor-not-allowed" disabled>
+                  See Details
+                </Button>
+              </Card>
+            </div>
           </div>
         )}
       </div>
@@ -225,14 +236,27 @@ export default function ChatWorkspace() {
                   message.type === "user" ? "text-right" : "text-left"
                 }`}
               >
+                {/* <ChatLoader /> */}
                 <div
                   className={`inline-block p-2 rounded-lg ${
                     message.type === "user"
-                      ? "bg-blue-500 text-white"
+                      ? "bg-gradient-to-r from-blue-400 to-blue-600 text-white"
                       : "bg-gray-200"
                   }`}
                 >
-                  {message.content}
+                  <div
+                    dangerouslySetInnerHTML={{
+                      __html: loadMarkdown(message.content),
+                    }}
+                  />
+
+                  {/* {message.type === "bot" && (
+                    <div className="flex justify-end">
+                      <div className="bg-white outline-black p-1 rounded-md cursor-pointer">
+                        <Copy size={20} />
+                      </div>
+                    </div>
+                  )} */}
                 </div>
               </div>
             ))}
@@ -266,76 +290,7 @@ export default function ChatWorkspace() {
           rightSidebarOpen ? "w-64" : "w-0"
         } lg:relative absolute right-0 z-10 h-full`}
       >
-        {rightSidebarOpen && (
-          <div className="p-4">
-            <Tabs defaultValue="upload" className="">
-              <TabsList className="w-full bg-slate-200 border border-black rounded-lg">
-                <TabsTrigger value="files" className="flex-1">
-                  Files
-                </TabsTrigger>
-                <TabsTrigger value="upload" className="flex-1">
-                  Upload
-                </TabsTrigger>
-              </TabsList>
-              <TabsContent value="files">
-                <ScrollArea className="h-[calc(100vh-180px)]">
-                  <div className="space-y-2">
-                    {uploadedFiles.map((file, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between p-2 bg-white rounded-md"
-                      >
-                        <div className="flex items-center">
-                          <FileIcon className="mr-2 h-4 w-4" />
-                          <span className="text-sm truncate">{file.name}</span>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => {
-                            setUploadedFiles(
-                              uploadedFiles.filter((_, i) => i !== index)
-                            );
-                          }}
-                        >
-                          <Trash2Icon className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                </ScrollArea>
-              </TabsContent>
-              <TabsContent value="upload">
-                <div
-                  className={`border-2 border-dashed rounded-lg p-4 text-center ${
-                    isDragging ? "border-blue-500 bg-blue-50" : ""
-                  }`}
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                >
-                  <UploadIcon className="mx-auto h-8 w-8 text-gray-400" />
-                  <p className="mt-2 text-sm text-gray-500">
-                    Drag and drop files here or click to upload
-                  </p>
-                </div>
-                <Input
-                  type="file"
-                  className="hidden"
-                  ref={fileInputRef}
-                  onChange={(e) => handleFileUpload(e.target.files)}
-                  multiple
-                />
-                <Button
-                  className="w-full mt-4"
-                  onClick={() => fileInputRef.current.click()}
-                >
-                  Select Files
-                </Button>
-              </TabsContent>
-            </Tabs>
-          </div>
-        )}
+        {rightSidebarOpen && <RightPanel />}
       </div>
       <CreateWorkspaceForm
         isOpen={showCreateWorkspaceForm}

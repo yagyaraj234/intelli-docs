@@ -9,26 +9,34 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getWorkspace = exports.getAllWorkspaces = exports.deleteWorkspace = exports.createWorkspace = void 0;
-const error_1 = require("utils/response/error");
-const success_1 = require("utils/response/success");
-const nanoid_1 = require("nanoid");
-let db;
+exports.temporaryWorkspace = exports.updateWorkspace = exports.getWorkspace = exports.getAllWorkspaces = exports.deleteWorkspace = exports.createWorkspace = exports.generateId = void 0;
+const index_1 = require("../index");
+const error_1 = require("../utils/response/error");
+const success_1 = require("../utils/response/success");
+const zod_schema_1 = require("../types/zod-schema");
+const generateId = () => {
+    return Math.random().toString(36).substr(2, 9);
+};
+exports.generateId = generateId;
 const createWorkspace = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { name, type, url, uid } = req.body;
+    const { uid } = req.body;
     try {
-        const userRef = yield db.collection("users").doc(uid);
+        const { name, role, url } = zod_schema_1.workspaceSchema.parse(req.body);
+        if (!name || !role) {
+            return res.status(400).json((0, error_1.ApiError)("Name and role are required", 400));
+        }
+        const userRef = yield index_1.db.collection("users").doc(uid);
         const workspaces = yield userRef.collection("workspaces").get();
-        if (workspaces.size >= 3) {
+        if (workspaces.size >= 5) {
             return res.status(400).json((0, error_1.ApiError)("You have reached the limit.", 400));
         }
-        const id = (0, nanoid_1.nanoid)(6);
+        const id = (0, exports.generateId)();
         const date = new Date().toISOString();
         const data = {
             id,
             name,
-            type,
-            url,
+            role,
+            url: url || "",
             createdAt: date,
             updatedAt: date,
         };
@@ -44,9 +52,9 @@ const createWorkspace = (req, res) => __awaiter(void 0, void 0, void 0, function
 });
 exports.createWorkspace = createWorkspace;
 const deleteWorkspace = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { user, id, uid } = req.body;
+    const { id, uid } = req.body;
     try {
-        const userRef = yield db
+        const userRef = yield index_1.db
             .collection("users")
             .doc(uid)
             .collection("workspaces");
@@ -68,14 +76,15 @@ const deleteWorkspace = (req, res) => __awaiter(void 0, void 0, void 0, function
 });
 exports.deleteWorkspace = deleteWorkspace;
 const getAllWorkspaces = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { user, uid } = req.body;
+    const { uid } = req.body;
     try {
-        const userRef = yield db.collection("users").doc(uid);
+        const userRef = yield index_1.db.collection("users").doc(uid);
         const workspaces = yield userRef.collection("workspaces").get();
         const data = [];
         workspaces.forEach((doc) => {
-            const { id, name } = doc.data();
-            data.push({ id, name });
+            const { id, name, role } = doc.data();
+            // @ts-ignore
+            data.push({ id, name, role });
         });
         return res.status(200).json((0, success_1.ApiSuccess)("Workspaces fetched", data));
     }
@@ -86,9 +95,10 @@ const getAllWorkspaces = (req, res) => __awaiter(void 0, void 0, void 0, functio
 });
 exports.getAllWorkspaces = getAllWorkspaces;
 const getWorkspace = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { user, id } = req.body;
+    const { uid } = req.body;
+    const { id } = req.params;
     try {
-        const userRef = yield db.collection("users").doc(user.uid);
+        const userRef = yield index_1.db.collection("users").doc(uid);
         const workspace = yield userRef.collection("workspaces").doc(id).get();
         if (!workspace.exists) {
             return res.status(404).json((0, error_1.ApiError)("Workspace not found", 404));
@@ -103,3 +113,36 @@ const getWorkspace = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     }
 });
 exports.getWorkspace = getWorkspace;
+const updateWorkspace = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { uid, name, role, url } = req.body;
+    const { id } = req.params;
+    try {
+        const userRef = yield index_1.db.collection("users").doc(uid);
+        const workspace = yield userRef.collection("workspaces").doc(id).get();
+        if (!workspace.exists) {
+            return res.status(404).json((0, error_1.ApiError)("Workspace not found", 404));
+        }
+        yield userRef.collection("workspaces").doc(id).update({ name, role, url });
+        return res
+            .status(200)
+            .json((0, success_1.ApiSuccess)("Workspace updated successfully", {}));
+    }
+    catch (error) {
+        console.log(error);
+        return res.status(500).json((0, error_1.ApiError)("Internal server error", 500, error));
+    }
+});
+exports.updateWorkspace = updateWorkspace;
+const temporaryWorkspace = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const id = (0, exports.generateId)();
+    const data = {
+        id,
+        name: "My Workspace",
+        role: "general",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+    };
+    yield index_1.db.collection('temporary-chat').doc(id).set(data);
+    return res.status(200).json((0, success_1.ApiSuccess)("Workspace created successfully", data));
+});
+exports.temporaryWorkspace = temporaryWorkspace;
