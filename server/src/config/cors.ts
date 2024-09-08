@@ -1,5 +1,5 @@
 export const corsOptions = {
-  origin: "http://localhost:3000", // Replace with your frontend URL
+  origin: process.env.APP_URL, // Replace with your frontend URL
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
   allowedHeaders: [
