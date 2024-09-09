@@ -15,6 +15,7 @@ import { authenticate } from "@/services/user";
 import { API_URL } from "@/services/constant";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/hooks/use-user";
+import { createTemporaryWorkspace } from "@/services/workspace";
 
 const names = ["Code", "Data", "Files", "Images", "Videos"];
 
@@ -68,6 +69,13 @@ export default function EnhancedLandingPage() {
   const scrollToSection = (ref: any) => {
     ref.current.scrollIntoView({ behavior: "smooth" });
   };
+
+  async function handleCreateWorkspace() {
+    const res = await createTemporaryWorkspace();
+    if (res.status === "success") {
+      router.push(`/workspace/${res.data.id}`);
+    }
+  }
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -143,12 +151,13 @@ export default function EnhancedLandingPage() {
                 </div>
               </div>
 
-              <Button
+              {/* <Button
                 variant="link"
                 className="text-white transition-all duration-500 ease-in-out"
+                onClick={handleCreateWorkspace}
               >
                 Continue without signup
-              </Button>
+              </Button> */}
             </div>
           </div>
         </section>

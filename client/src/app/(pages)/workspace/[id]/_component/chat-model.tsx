@@ -10,10 +10,8 @@ import ChatLoader from "./chat-loader";
 import { useWorkspace } from "@/hooks/use-workspace";
 
 const errorMessage = `## Oops! Something went wrong.
-
-Sorry for the inconvenience! As the solo developer, I'm aware of the issue and working to resolve it. Please check back later for updates. Thanks for your patience and for using WorkBot!
-
-- Your dedicated WorkBot developer`;
+\n\n
+Issue identified. Fix coming soon.`;
 
 let timer: any;
 export const Chat = () => {
@@ -44,7 +42,7 @@ export const Chat = () => {
 
     clearTimeout(timer);
     timer = setTimeout(async () => {
-      await updateHistory(lastTwoMessages, workspace.id);
+      await updateHistory(lastTwoMessages, workspace?.id || "fdjsnfd");
     }, 3000);
   };
 
@@ -95,19 +93,19 @@ export const Chat = () => {
       const stream = await streamChat(input, workspace.id);
       for await (const chunk of stream) {
         setGenerating(false);
-        if (!chunk.text) {
-          handleSetMessage(errorMessage, botMessageId, newMessages);
-          return;
-        }
+        // if (!chunk.text) {
+        //   handleSetMessage(errorMessage, botMessageId, newMessages);
+        //   return;
+        // }
         message += chunk.text;
         handleSetMessage(message, botMessageId, newMessages);
       }
     } catch (error: any) {
       handleSetMessage(errorMessage, botMessageId, newMessages);
       console.error("Streaming error:", error);
-      toast.error(`Error while creating response: ${error.message}`, {
-        duration: 5000,
-      });
+      // toast.error(`Error while creating response: ${error.message}`, {
+      //   duration: 5000,
+      // });
     } finally {
       setGenerating(false);
     }
