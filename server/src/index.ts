@@ -13,6 +13,7 @@ import "module-alias/register";
 import { corsOptions } from "./config/cors";
 import { generateToken } from "./utils/token/token";
 import { ApiSuccess } from "./utils/response/success";
+import { limiter } from "./config/rate-limit";
 
 dotenv.config();
 
@@ -20,6 +21,7 @@ const app = express();
 app.use(express.json());
 app.use(cors(corsOptions));
 app.use(cookieParser());
+app.use(limiter);
 
 // Initialize Firebase
 admin.initializeApp({
@@ -66,20 +68,15 @@ const createUser = async (user: any) => {
 
   const id = user.sub.slice(0, 10);
 
-  await db
-    .collection("users")
-    .doc(user.sub)
-    .collection("workspaces")
-    .doc(id)
-    .set({
-      id,
-      name: "Personal Workspace",
-      createdAt: date,
-      updatedAt: date,
-      history: [],
-      files: [],
-      usage: 0,
-    });
+  db.collection("users").doc(user.sub).collection("workspaces").doc(id).set({
+    id,
+    name: "Personal Workspace",
+    createdAt: date,
+    updatedAt: date,
+    history: [],
+    files: [],
+    usage: 0,
+  });
   return user;
 };
 
@@ -125,7 +122,12 @@ app.get("/api/v1/auth", async (req, res) => {
     if (!token) {
       return res.status(401).json({ message: "Unauthorized" });
     }
-    const decoded = await JWT.verify(token, process.env.JWT_SECRET || "");
+    let decoded;
+    try {
+      decoded = JWT.verify(token, process.env.JWT_SECRET || "");
+    } catch (error) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
     if (!decoded) return res.status(401).json({ message: "Unauthorized" });
 
     // @ts-ignore
@@ -135,7 +137,7 @@ app.get("/api/v1/auth", async (req, res) => {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    let user = await userRef.data();
+    let user = userRef.data();
 
     user = {
       ...user,
@@ -145,6 +147,7 @@ app.get("/api/v1/auth", async (req, res) => {
     return res.status(200).json(ApiSuccess("User authenticated", user));
   } catch (error) {
     console.log(error);
+    return res.status(500).json({ message: "Internal server error" });
   }
 });
 
@@ -170,18 +173,6 @@ app.get(
       // @ts-ignore
       uid: user?.id,
     });
-
-    // const cookieOptions = {
-    //   httpOnly: true,
-    //   maxAge: 60 * 60 * 1000 * 24 * 30, // 30 days in milliseconds
-    //   secure: process.env.NODE_ENV === "production", // Only use HTTPS in production
-    //   sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-    // };
-
-    // if (process.env.NODE_ENV === "production") {
-    //   // @ts-ignore
-    //   cookieOptions.domain = "https://workbot.site"; // Replace with your actual domain
-    // }
 
     res.cookie("intelli-doc-token", token, {
       maxAge: 60 * 60 * 1000 * 24 * 30,

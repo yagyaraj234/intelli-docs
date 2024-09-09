@@ -1,5 +1,9 @@
+// Added Conditional in corsOptions
 export const corsOptions = {
-  origin: "https://workbot.site", // Replace with your frontend URL
+  origin:
+    process.env.NODE_ENV === "production"
+      ? "https://workbot.site"
+      : "http://localhost:3000", // Replace with your frontend URL
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
   allowedHeaders: [

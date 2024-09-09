@@ -160,10 +160,8 @@ export const attachFile = async (req: Request, res: Response) => {
 };
 
 export const temporaryWorkspace = async (req: Request, res: Response) => {
-  console.log("reached");
-  const id: string = "fkjnfsdjkd";
+  const id: string = generateId();
 
-  console.log(id);
   const data = {
     id: id || "kjfnjsfdn",
     name: "My Workspace",
@@ -173,8 +171,7 @@ export const temporaryWorkspace = async (req: Request, res: Response) => {
   };
 
   try {
-    console.log(data);
-    await db.collection("temporary-chat").doc("jkfndfjs").set(data);
+    await db.collection("temporary_workspaces").doc(id).set(data);
     return res
       .status(200)
       .json(ApiSuccess("Workspace created successfully", data));
