@@ -1,5 +1,8 @@
 export const corsOptions = {
-  origin: "http://localhost:3000", // Replace with your frontend URL
+  origin:
+    process.env.NODE_ENV === "production"
+      ? "https://workbot.site"
+      : "http://localhost:3000", // Replace with your frontend URL
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
   allowedHeaders: [
