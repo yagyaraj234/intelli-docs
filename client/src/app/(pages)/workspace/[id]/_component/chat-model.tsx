@@ -9,15 +9,9 @@ import { loadMarkdown } from "@/utils/markdown";
 import ChatLoader from "./chat-loader";
 import { useWorkspace } from "@/hooks/use-workspace";
 
-const errorMessage = ` ## Oops! Something went wrong.
-\n
-Hey there! I'm the solo developer behind WorkBot, and it looks like we've hit a snag.
-\n
-I work on this project in my free time after my 9-5 job, so it might take me a bit to investigate and fix the issue. But don't worry, I'm on it!
-\n
-Thanks for your patience and for using WorkBot. I'll get things back up and running as soon as I can.
-\n
-Check back later for updates, and thanks for understanding!
+const errorMessage = `## Oops! Something went wrong.
+
+Sorry for the inconvenience! As the solo developer, I'm aware of the issue and working to resolve it. Please check back later for updates. Thanks for your patience and for using WorkBot!
 
 - Your dedicated WorkBot developer`;
 
