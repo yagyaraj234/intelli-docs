@@ -1,3 +1,4 @@
+// Added Conditional in corsOptions
 export const corsOptions = {
   origin:
     process.env.NODE_ENV === "production"
