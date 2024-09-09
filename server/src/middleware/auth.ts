@@ -1,10 +1,13 @@
 import { Request, Response, NextFunction } from "express";
 import Jwt from "jsonwebtoken";
 import { ApiError } from "../utils/response/error";
+import * as dotenv from "dotenv";
+
+dotenv.config();
 
 // Middleware to check if the user is logged in
 export const auth = (req: Request, res: Response, next: NextFunction) => {
-  console.log(req.baseUrl)
+  console.log(req.baseUrl);
   try {
     const token =
       req.cookies["intelli-doc-token"] ||
@@ -16,7 +19,11 @@ export const auth = (req: Request, res: Response, next: NextFunction) => {
         .json(ApiError("You are not authorized to access this route.", 401));
     }
 
-    const decoded = Jwt.verify(token, process.env.JWT_SECRET as string);
+    const decoded = Jwt.verify(
+      token,
+      (process.env.JWT_SECRET as string) ||
+        `5XlyohERHY6hfkEOVUoacazXMFjHrP4MkHHBtgv4uTmIECpW36cGCpI`
+    );
 
     if (!decoded) {
       return res
