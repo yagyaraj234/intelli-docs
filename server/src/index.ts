@@ -171,9 +171,23 @@ app.get(
       uid: user?.id,
     });
 
+    // const cookieOptions = {
+    //   httpOnly: true,
+    //   maxAge: 60 * 60 * 1000 * 24 * 30, // 30 days in milliseconds
+    //   secure: process.env.NODE_ENV === "production", // Only use HTTPS in production
+    //   sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    // };
+
+    // if (process.env.NODE_ENV === "production") {
+    //   // @ts-ignore
+    //   cookieOptions.domain = "https://workbot.site"; // Replace with your actual domain
+    // }
+
     res.cookie("intelli-doc-token", token, {
       maxAge: 60 * 60 * 1000 * 24 * 30,
       httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     });
     res.redirect(`${process.env.APP_URL}workspace/${workspaceId}`);
   }
