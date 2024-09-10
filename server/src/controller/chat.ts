@@ -1,13 +1,13 @@
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { Request, Response } from "express";
 import { db } from "../index";
-import { groqModel } from "../utils/langchain/model";
+import { groqModel, claudeModel } from "../utils/langchain/model";
 import { createHistory, prompt } from "../utils/langchain/prompts";
 import { ApiError } from "../utils/response/error";
 import { ApiSuccess } from "../utils/response/success";
 
 export const generate = async (req: Request, res: Response) => {
-  const { message, workspaceId, uid } = req.body;
+  const { message, workspaceId, uid, plan } = req.body;
   if (!message) {
     return res.status(400).json(ApiError("Message is required", 400));
   }
@@ -26,7 +26,12 @@ export const generate = async (req: Request, res: Response) => {
     // @ts-ignore
     const { history = [] } = workspaceRef.data();
     const ChatHistory = await createHistory(history);
-    const chain = prompt.pipe(groqModel).pipe(new StringOutputParser());
+    let chain;
+    if (!plan) {
+      chain = prompt.pipe(groqModel).pipe(new StringOutputParser());
+    } else {
+      chain = prompt.pipe(claudeModel).pipe(new StringOutputParser());
+    }
 
     const response = await chain.stream({
       input: message,
