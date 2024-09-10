@@ -12,7 +12,7 @@ export const generateId = () => {
 };
 
 export const createWorkspace = async (req: Request, res: Response) => {
-  const { uid } = req.body;
+  const { uid, plan } = req.body;
   try {
     const { name, role, url } = workspaceSchema.parse(req.body);
 
@@ -24,7 +24,7 @@ export const createWorkspace = async (req: Request, res: Response) => {
 
     const workspaces = await userRef.collection("workspaces").get();
 
-    if (workspaces.size >= 3) {
+    if (workspaces.size >= 3 && !plan) {
       return res.status(400).json(ApiError("You have reached the limit.", 400));
     }
 

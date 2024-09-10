@@ -36,6 +36,7 @@ import { loadMarkdown } from "@/utils/markdown";
 import { ChatLoader } from "./_component/chat-loader";
 import { streamChat } from "@/services/chat/chat";
 import { Chat } from "./_component/chat-model";
+import { useUser } from "@/hooks/use-user";
 
 export default function ChatWorkspace() {
   const {
@@ -44,6 +45,7 @@ export default function ChatWorkspace() {
     setWorkspaces,
     setCurrentWorkspace,
   } = useWorkspace();
+  const { plan } = useUser();
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState("");
   const [showUpgradeWorkspace, setShowUpgradeWorkspace] = useState(false);
@@ -190,20 +192,22 @@ export default function ChatWorkspace() {
                 </div>
               </ScrollArea>
 
-              <Card className="flex justify-center items-center p-2 flex-col gap-2 border border-black">
-                <div className="flex gap-2">
-                  <h1 className="flex gap-4 text-clip font-bold text-xl">
-                    Workbot
-                  </h1>
-                  <div className="uppercase text-[14px] bg-gradient-to-r to-[#A83279] from-[#D38312] px-2 py-1 rounded-full text-sm text-white">
-                    Pro 💎
+              {plan !== "free" && (
+                <Card className="flex justify-center items-center p-2 flex-col gap-2 border border-black">
+                  <div className="flex gap-2">
+                    <h1 className="flex gap-4 text-clip font-bold text-xl">
+                      Workbot
+                    </h1>
+                    <div className="uppercase text-[14px] bg-gradient-to-r to-[#A83279] from-[#D38312] px-2 py-1 rounded-full text-sm text-white">
+                      Pro 💎
+                    </div>
                   </div>
-                </div>
-                <p className="text-sm">Unlock 10x more features</p>
-                <Button className="w-full cursor-not-allowed" disabled>
-                  See Details
-                </Button>
-              </Card>
+                  <p className="text-sm">Unlock 10x more features</p>
+                  <Button className="w-full cursor-not-allowed" disabled>
+                    See Details
+                  </Button>
+                </Card>
+              )}
             </div>
           </div>
         )}

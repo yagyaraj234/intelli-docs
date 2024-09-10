@@ -143,6 +143,10 @@ app.get("/api/v1/auth", async (req, res) => {
       ...user,
       workspace: user?.id.slice(0, 10),
     };
+    // @ts-ignore
+    await db.collection("users").doc(decoded?.uid).update({
+      lastLogin: new Date().toISOString(),
+    });
 
     return res.status(200).json(ApiSuccess("User authenticated", user));
   } catch (error) {
@@ -172,6 +176,8 @@ app.get(
       email: user?.email,
       // @ts-ignore
       uid: user?.id,
+      // @ts-ignore
+      plan: user?.plan,
     });
 
     res.cookie("intelli-doc-token", token, {

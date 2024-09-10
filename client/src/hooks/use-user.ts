@@ -3,6 +3,7 @@ import { create } from "zustand";
 interface UserState {
   email: string;
   id: string;
+  plan: string;
 }
 
 interface UserStore {

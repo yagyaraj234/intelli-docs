@@ -40,6 +40,8 @@ export const auth = (req: Request, res: Response, next: NextFunction) => {
     req.user = decoded as any;
     // @ts-ignore
     req.body.uid = decoded.uid as string;
+    // @ts-ignore
+    req.body.plan = decoded?.plan === "free" && false && true;
 
     next();
   } catch (error) {
