@@ -5,10 +5,6 @@ interface workspaceState {
   id: string;
 }
 
-interface workspacesState {
-  workspaces: workspaceState[];
-}
-
 interface chat {
   id: string;
   message: string;
@@ -22,14 +18,22 @@ interface currentWorkspaceState {
   url: string;
   createdAt: string;
   updatedAt: string;
-  files: string[];
-  chats: chat[];
+  files: any[];
+  history: chat[];
+  role: string;
 }
 
-export const useWorkspace = create((set) => ({
+interface storeState {
+  workspaces: workspaceState[];
+  workspace: currentWorkspaceState | null;
+  setWorkspaces: (workspaces: workspaceState[]) => void;
+  setCurrentWorkspace: (workspace: currentWorkspaceState) => void;
+}
+
+export const useWorkspace = create<storeState>((set) => ({
   workspaces: [],
   workspace: null,
-  setWorkspaces: (workspaces: workspacesState | null) => set({ workspaces }),
+  setWorkspaces: (workspaces: workspaceState[]) => set({ workspaces }),
   setCurrentWorkspace: (workspace: currentWorkspaceState | null) =>
     set({ workspace }),
 }));

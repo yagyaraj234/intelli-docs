@@ -17,6 +17,7 @@ let timer: any;
 export const Chat = () => {
   // @ts-ignore
   const { workspace } = useWorkspace();
+  const tapToBottom = useRef<HTMLDivElement | null>(null);
   const [inputMessage, setInputMessage] = useState<string>("");
   const [messages, setMessages] = useState<any>([]);
   const [generating, setGenerating] = useState<boolean>(false);
@@ -81,6 +82,23 @@ export const Chat = () => {
     updateChat(updatedMessages);
   };
 
+  useEffect(() => {
+    const chatContainer = tapToBottom?.current;
+
+    // Find the index of the last question
+    const lastQuestionIndex = messages
+      ?.map((item: any) => item.type)
+      ?.lastIndexOf("user");
+
+    // Find the position of the last question
+    if (lastQuestionIndex !== -1 && chatContainer) {
+      const lastQuestionElement = chatContainer?.children[lastQuestionIndex];
+      if (lastQuestionElement) {
+        lastQuestionElement?.scrollIntoView({ behavior: "smooth" });
+      }
+    }
+  }, [messages]);
+
   const stream = async (
     input: string,
     botMessageId: string,
@@ -90,13 +108,12 @@ export const Chat = () => {
     let message = "";
 
     try {
+      if (!workspace) {
+        throw new Error("Workspace not found");
+      }
       const stream = await streamChat(input, workspace.id);
       for await (const chunk of stream) {
         setGenerating(false);
-        // if (!chunk.text) {
-        //   handleSetMessage(errorMessage, botMessageId, newMessages);
-        //   return;
-        // }
         message += chunk.text;
         handleSetMessage(message, botMessageId, newMessages);
       }
@@ -112,8 +129,11 @@ export const Chat = () => {
   };
 
   return (
-    <div className="flex-1 flex flex-col overflow-x-auto">
-      <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
+    <div className="flex-1 flex flex-col overflow-x-auto max-h-screen overflow-y-hidden">
+      <div
+        className="flex-1 p-4 max-h-screen overflow-y-auto scrollbar scrollbar-none"
+        ref={tapToBottom}
+      >
         <div className="space-y-4">
           {messages?.map((message: any, index: number) => (
             <div
@@ -140,7 +160,7 @@ export const Chat = () => {
           ))}
           {generating && <ChatLoader />}
         </div>
-      </ScrollArea>
+      </div>
       <div className="p-4 border-t">
         <div className="flex space-x-2">
           <Textarea
@@ -157,7 +177,7 @@ export const Chat = () => {
               }
             }}
             placeholder="Type your message..."
-            className="flex-1 border border-black rounded-lg p-2 h-10 min-h-[40px] max-h-[120px] resize-auto"
+            className="flex-1 border border-black rounded-lg p-2 h-10 min-h-[40px] max-h-[120px] resize-auto scrollbar scrollbar-none"
           />
           <Button onClick={handleSendMessage}>
             <SendIcon className="h-4 w-4" />

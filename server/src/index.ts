@@ -14,6 +14,12 @@ import { corsOptions } from "./config/cors";
 import { generateToken } from "./utils/token/token";
 import { ApiSuccess } from "./utils/response/success";
 import { limiter } from "./config/rate-limit";
+// import { jinaLoader } from "./utils/langchain/document-loader";
+
+// import { Pinecone as PineconeClient } from "@pinecone-database/pinecone";
+// Pinecone setup
+import { getPineconeClient } from "./config/pinecone";
+import { retrieveFromVectorStore } from "./utils/langchain/emedding";
 
 dotenv.config();
 
@@ -40,6 +46,18 @@ db.settings({
 });
 const storage = admin.storage();
 export const bucket = storage.bucket(process.env.FIREBASE_BUCKET);
+
+export let pineconeInstance: any = null;
+async function PineconeClient() {
+  pineconeInstance = await getPineconeClient();
+  // await jinaLoader(
+  //   "https://firebasestorage.googleapis.com/v0/b/chat-doc-46080.appspot.com/o/101093862459407658767%2FDevelopment_Flow_for_Optical_Dev%5B1%5D.pdf?alt=media&token=2ac039bc-fc31-4c71-9923-cc4fce884f1e",
+  //   pineconeInstance
+  // );
+  await retrieveFromVectorStore(pineconeInstance, "Have a question?");
+}
+PineconeClient();
+// @ts-ignore
 
 app.get("/", (req, res) => {
   res.send(`Server up and running.`);

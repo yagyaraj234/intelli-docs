@@ -41,12 +41,36 @@ export const deleteWorkspace = async (id: string) => {
     credentials: "include",
   });
   const data = await response.json();
+  console.log(data);
   return data;
 };
 
 export const createTemporaryWorkspace = async () => {
   const response = await fetch(`${API_URL}workspaces/create_temporary_chat`, {
     method: "GET",
+  });
+  const data = await response.json();
+  return data;
+};
+
+export const attachFile = async (files: File[], id: string) => {
+  const formData = new FormData();
+  files.forEach((file) => {
+    formData.append("files", file);
+  });
+  formData.append("id", id);
+
+  return await fetch(`${API_URL}workspaces/upload`, {
+    method: "POST",
+    credentials: "include",
+    body: formData,
+  });
+};
+
+export const deleteFile = async (id: string, fileId: string) => {
+  const response = await fetch(`${API_URL}workspaces/${id}/files/${fileId}`, {
+    method: "DELETE",
+    credentials: "include",
   });
   const data = await response.json();
   return data;

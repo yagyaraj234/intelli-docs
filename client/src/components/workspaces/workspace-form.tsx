@@ -60,8 +60,8 @@ export function CreateWorkspaceForm({
                 <Label htmlFor="general">General Chat</Label>
               </div>
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="code" id="code" disabled />
-                <Label htmlFor="code">Code Discussion</Label>
+                <RadioGroupItem value="code" id="code" />
+                <Label htmlFor="code">Programmer</Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="pdf" id="pdf" disabled />
