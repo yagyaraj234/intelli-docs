@@ -1,10 +1,12 @@
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { Request, Response } from "express";
 import { db } from "../index";
-import { groqModel, claudeModel } from "../utils/langchain/model";
+import { claudeModel, groqModel } from "../utils/langchain/model";
 import { createHistory, getPrompt } from "../utils/langchain/prompts";
 import { ApiError } from "../utils/response/error";
 import { ApiSuccess } from "../utils/response/success";
+import { retrieveFromVectorStore } from "../utils/langchain/emedding";
+import { pineconeInstance } from "../index";
 
 export const generate = async (req: Request, res: Response) => {
   const { message, workspaceId, uid, plan } = req.body;
@@ -24,19 +26,27 @@ export const generate = async (req: Request, res: Response) => {
       return res.status(500).json(ApiError("Workspace doesn't exists", 404));
     }
     // @ts-ignore
-    const { history = [] } = workspaceRef.data();
+    const { history = [], role } = workspaceRef.data();
     const ChatHistory = await createHistory(history);
     let chain;
-    const prompt = getPrompt("general");
+    const prompt = await getPrompt(role);
     if (!plan) {
       chain = prompt.pipe(groqModel).pipe(new StringOutputParser());
     } else {
       chain = prompt.pipe(claudeModel).pipe(new StringOutputParser());
     }
 
+    const context = await retrieveFromVectorStore(
+      pineconeInstance,
+      message,
+      workspaceId
+    );
+    console.log("context", context);
+
     const response = await chain.stream({
       input: message,
       chat_history: ChatHistory,
+      context: context,
     });
 
     res.writeHead(200, {

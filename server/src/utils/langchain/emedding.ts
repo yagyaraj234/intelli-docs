@@ -1,6 +1,6 @@
+import { JinaEmbeddings } from "@langchain/community/embeddings/jina";
 import { PineconeStore } from "@langchain/pinecone";
 import { Pinecone as PineconeClient } from "@pinecone-database/pinecone";
-import { JinaEmbeddings } from "@langchain/community/embeddings/jina";
 
 const JINA_API_TOKEN = process.env.JINAAI_API_KEY!;
 
@@ -12,15 +12,7 @@ export async function jinaEmbed(docs: any, pineconeInstance: any) {
 
   const documentEmbeddings = await embeddings.embedDocuments(docs);
 
-  const index = pineconeInstance.Index("intelligent-documents-2");
-  // await PineconeStore.fromDocuments(
-  //   docs, // Pass the original documents
-  //   embeddings, // Pass the embeddings instance
-  //   {
-  //     pineconeIndex: index,
-  //     textKey: "pageContent", // Match the Document interface's property name
-  //   }
-  // );
+  const index = pineconeInstance.Index(process.env.PINECONE_INDEX_NAME!);
 
   await PineconeStore.fromDocuments(
     documentEmbeddings.map((embedding, index) => ({
@@ -38,7 +30,8 @@ export async function jinaEmbed(docs: any, pineconeInstance: any) {
 
 export async function retrieveFromVectorStore(
   client: PineconeClient,
-  query: string
+  query: string,
+  workspaceId: string
 ) {
   try {
     const embeddings = new JinaEmbeddings({
@@ -52,9 +45,13 @@ export async function retrieveFromVectorStore(
       textKey: "text",
     });
 
-    const results = await vectorStore.similaritySearch(query, 2);
+    const results = await vectorStore.similaritySearch(query, 5);
 
-    const context = results
+    const filteredResults = results.filter((result) => {
+      return result.metadata.workspaceId === workspaceId;
+    });
+
+    const context = filteredResults
       .map((result) => {
         return result.pageContent;
       })
@@ -62,8 +59,6 @@ export async function retrieveFromVectorStore(
     return context;
   } catch (error) {
     console.log("error ", error);
-    throw new Error(
-      "Something went wrong while retrieving from vector store !"
-    );
+    throw new Error("Something went wrong while retrieving from vector store!");
   }
 }

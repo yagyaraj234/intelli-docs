@@ -97,6 +97,7 @@ export const getPrompt = (type: string) => {
       "Answer the user query: ## Output instructions always return markdown response also don't give any extra information. ",
     ],
     new MessagesPlaceholder("chat_history"),
+    new MessagesPlaceholder("context"),
     ["user", role],
   ]);
 };

@@ -5,15 +5,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { attachFile, deleteFile } from "@/services/workspace";
 import { FileIcon, Trash2Icon, UploadIcon } from "lucide-react";
-import { useParams } from "next/navigation";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { general, code } from "./util";
 
-interface RightPanelProps {
-  files: any;
-}
-const RightPanel = ({ files }: RightPanelProps) => {
+const RightPanel = () => {
   const { workspace, setCurrentWorkspace } = useWorkspace();
   const [uploading, setUploading] = useState(false);
   const [deleting, setDeleting] = useState<string[]>([]);
@@ -38,8 +34,12 @@ const RightPanel = ({ files }: RightPanelProps) => {
 
   const handleFileUpload = async (files: FileList) => {
     const newFiles = Array.from(files);
+    if (!workspace) {
+      toast.info("Please select a workspace");
+      return;
+    }
 
-    if (!workspace || !newFiles.length) {
+    if (!newFiles.length) {
       toast.error("Error uploading files");
       return;
     }

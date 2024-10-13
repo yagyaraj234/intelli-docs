@@ -162,7 +162,7 @@ export const attachFile = async (req: Request, res: Response) => {
     const results = await Promise.all(uploadPromises);
 
     for (const result of results) {
-      jinaLoader(result.url, pineconeInstance, result.name, id);
+      await jinaLoader(result.url, pineconeInstance, result.name, id);
     }
 
     const ref = await db

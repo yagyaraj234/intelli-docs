@@ -38,7 +38,7 @@ async function initPineconeClient() {
 
     //   @ts-ignore
     if (!existingIndexes.indexes.find((i) => i.name === indexName)) {
-      createIndex(pineconeClient, indexName);
+      await createIndex(pineconeClient, indexName);
     } else {
       console.log("Your index already exists. nice !!");
     }

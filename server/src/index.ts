@@ -19,7 +19,7 @@ import { limiter } from "./config/rate-limit";
 // import { Pinecone as PineconeClient } from "@pinecone-database/pinecone";
 // Pinecone setup
 import { getPineconeClient } from "./config/pinecone";
-import { retrieveFromVectorStore } from "./utils/langchain/emedding";
+// import { retrieveFromVectorStore } from "./utils/langchain/emedding";
 
 dotenv.config();
 
@@ -54,7 +54,7 @@ async function PineconeClient() {
   //   "https://firebasestorage.googleapis.com/v0/b/chat-doc-46080.appspot.com/o/101093862459407658767%2FDevelopment_Flow_for_Optical_Dev%5B1%5D.pdf?alt=media&token=2ac039bc-fc31-4c71-9923-cc4fce884f1e",
   //   pineconeInstance
   // );
-  await retrieveFromVectorStore(pineconeInstance, "Have a question?");
+  // await retrieveFromVectorStore(pineconeInstance, "Have a question?");
 }
 PineconeClient();
 // @ts-ignore
