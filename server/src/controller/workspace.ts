@@ -1,11 +1,13 @@
 import { Request, Response } from "express";
 
-import { db } from "../index";
+import { db, pineconeInstance } from "../index";
 import { ApiError } from "../utils/response/error";
 import { ApiSuccess } from "../utils/response/success";
 
 import { workspaceSchema } from "../types/zod-schema";
-import { uploadFile } from "../utils/storage/storage";
+import { uploadFile, deleteDoc } from "../utils/storage/storage";
+import { jinaLoader } from "../utils/langchain/document-loader";
+import { deleteFromPinecone } from "../utils/langchain/emedding";
 
 export const generateId = () => {
   return Math.random().toString(36).substr(2, 9);
@@ -52,9 +54,13 @@ export const createWorkspace = async (req: Request, res: Response) => {
 };
 
 export const deleteWorkspace = async (req: Request, res: Response) => {
-  const { id, uid } = req.body;
+  const { uid } = req.body;
+  const { id } = req.params;
   try {
-    const userRef = db.collection("users").doc(uid).collection("workspaces");
+    const userRef = await db
+      .collection("users")
+      .doc(uid)
+      .collection("workspaces");
 
     const workspaces = await userRef.get();
 
@@ -138,8 +144,12 @@ export const updateWorkspace = async (req: Request, res: Response) => {
 };
 
 export const attachFile = async (req: Request, res: Response) => {
-  if (!req.files) {
-    return res.json(ApiError("Failed to upload", 400));
+  const { uid, id } = req.body;
+
+  if (!uid || !id) {
+    return res
+      .status(400)
+      .json(ApiError("User ID and Workspace ID are required", 400));
   }
 
   try {
@@ -147,11 +157,38 @@ export const attachFile = async (req: Request, res: Response) => {
       return res.status(400).json(ApiError("No files uploaded", 400));
     }
 
-    const uploadPromises = (req.files as Express.Multer.File[]).map((file) =>
-      uploadFile(file)
+    const uploadPromises = (req.files as Express.Multer.File[]).map(
+      async (file) => await uploadFile(file, uid)
     );
     const results = await Promise.all(uploadPromises);
 
+
+    const embedPromise = results.map(async(element) => {
+      await jinaLoader(element.url,pineconeInstance,element.id,element.name,id)
+    });
+
+    // for (const result of results) {
+    //   await jinaLoader(result.url, pineconeInstance, result.name, id);
+    // }
+
+    await Promise.all(embedPromise)
+
+    const ref = await db
+      .collection("users")
+      .doc(uid)
+      .collection("workspaces")
+      .doc(id);
+    const doc = await ref.get();
+
+    if (!doc.exists) {
+      return res.status(404).json(ApiError("Workspace not found", 404));
+    }
+
+    const data = await doc.data();
+    // @ts-ignore
+    const files = [...(data.files || []), ...results];
+
+    await ref.update({ files });
     res.status(200).json(ApiSuccess("Files uploaded successfully", results));
   } catch (error) {
     console.log(error);
@@ -159,22 +196,34 @@ export const attachFile = async (req: Request, res: Response) => {
   }
 };
 
-export const temporaryWorkspace = async (req: Request, res: Response) => {
-  const id: string = generateId();
-
-  const data = {
-    id: id || "kjfnjsfdn",
-    name: "My Workspace",
-    role: "general",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
-
+export const deleteFile = async (req: Request, res: Response) => {
   try {
-    await db.collection("temporary_workspaces").doc(id).set(data);
-    return res
-      .status(200)
-      .json(ApiSuccess("Workspace created successfully", data));
+    const { id, fileId } = req.params;
+
+    const { uid } = req.body;
+
+    const ref = await db
+      .collection("users")
+      .doc(uid)
+      .collection("workspaces")
+      .doc(id);
+    const doc = await ref.get();
+
+    if (!doc.exists) {
+      return res.status(404).json(ApiError("Workspace not found", 404));
+    }
+
+    const { files } = (await doc.data()) || { files: [] };
+
+    const fileName = files.find((file: any) => file.id === fileId).name;
+    await deleteFromPinecone(pineconeInstance,fileId)
+    await deleteDoc(`${uid}/${fileName}`);
+
+    const updatedFiles = files.filter((file: any) => file.id !== fileId);
+
+    await ref.update({ files: updatedFiles });
+
+    res.status(200).json(ApiSuccess("File deleted successfully", updatedFiles));
   } catch (error) {
     console.log(error);
     return res.status(500).json(ApiError("Internal server error", 500, error));

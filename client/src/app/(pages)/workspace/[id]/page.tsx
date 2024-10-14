@@ -37,6 +37,7 @@ import { ChatLoader } from "./_component/chat-loader";
 import { streamChat } from "@/services/chat/chat";
 import { Chat } from "./_component/chat-model";
 import { useUser } from "@/hooks/use-user";
+import { WorkspaceMenu } from "./_component/dropdown-workspace";
 
 export default function ChatWorkspace() {
   const {
@@ -138,13 +139,17 @@ export default function ChatWorkspace() {
     }
   };
 
+  const handleTruncate = (text, length) => {
+    return text.length > length ? text.substring(0, length) + "..." : text;
+  };
+
   return (
     <div className="flex h-screen overflow-hidden">
       <UpgradePopup
         isOpen={showUpgradeWorkspace}
         onClose={() => setShowUpgradeWorkspace(false)}
       />
-      <Toaster position="top-right" closeButton />
+      <Toaster position="bottom-right" closeButton />
       {/* Left Sidebar */}
       <div
         className={`bg-gray-100 transition-all duration-300 ease-in-out ${
@@ -182,11 +187,14 @@ export default function ChatWorkspace() {
                     <Button
                       key={workspace.id}
                       variant={id === workspace.id ? "outline" : "link"}
-                      className="w-full justify-start gap-4 truncate"
+                      className="w-full  gap-2 truncate flex justify-between"
                       onClick={() => switchWorkspace(workspace)}
                     >
-                      {renderIcon(workspace.role)}
-                      {workspace.name}
+                      <div className="flex gap-2">
+                        {renderIcon(workspace.role)}
+                        {handleTruncate(workspace.name, 16)}
+                      </div>
+                      <WorkspaceMenu workspaceId={workspace.id} />
                     </Button>
                   ))}
                 </div>

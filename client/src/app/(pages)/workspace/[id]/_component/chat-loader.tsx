@@ -12,7 +12,7 @@ export const ChatLoader = () => {
 
   return (
     <div className="flex flex-col gap-1 items-start">
-      {Array.from({ length: 6 }).map((_, index) => (
+      {Array.from({ length: 8 }).map((_, index) => (
         <Skeleton
           key={index}
           className=" bg-gray-400  h-[12px]"

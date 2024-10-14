@@ -6,8 +6,8 @@ import {
   deleteWorkspace,
   getWorkspace,
   getAllWorkspaces,
-  temporaryWorkspace,
   attachFile,
+  deleteFile,
 } from "../controller/workspace";
 
 router.post("/create", auth, createWorkspace);
@@ -17,9 +17,7 @@ router.get("", auth, getAllWorkspaces);
 
 // Upload file
 
-router.post("/upload", auth, upload.array("files"), attachFile);
-
-// temporary workspace
-router.get("/create_temporary_chat", temporaryWorkspace);
+router.post("/upload", upload.array("files", 10), auth, attachFile);
+router.delete("/:id/files/:fileId", auth, deleteFile);
 
 module.exports = router;
