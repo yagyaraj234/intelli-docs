@@ -102,8 +102,8 @@ export const getPrompt = (type: string) => {
 };
 
 export async function createHistory(history: any[]) {
-  return history.map((item,index:number) => {
-    if(index > 10) return;
+  const last5Messages = history.length > 10 ? history.slice(0,10) : history
+  return last5Messages.map((item,index:number) => {
     if (item.type === "user") {
       return new HumanMessage(item.content);
     } else {
