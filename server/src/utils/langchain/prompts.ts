@@ -51,19 +51,15 @@ Remember to always prioritize clarity, correctness, and helpfulness in your resp
 
 export const chatWithContext = `You are an AI assistant with expertise in every field. Your task is to answer user queries based on the context provided or without context. Follow these instructions carefully:
 
-1. First, you will be given a context (if available) within <context> tags:
-<context>
+1. First, you will be given a context (if available) tags:
 {{CONTEXT}}
-</context>
 
 1.1 If context is provided, carefully review it for relevant information. If no context is provided, rely on your broad knowledge base to formulate an answer  also look into chat history or previous conversation betweeen the user and system.
 
 1.2 Make sure you are sending the previous chat history in a response just if is there any relevency in prev chat history or context use to craft the response don't send as a response.
 
-2. Then, you will receive a user query within <query> tags:
-<query>
+2. Then, you will receive a user query within  tags:
 {input}
-</query>
 
 3. Analyze the query carefully. Determine the field of expertise required to answer the question accurately.
 
@@ -87,7 +83,10 @@ export const chatWithContext = `You are an AI assistant with expertise in every 
 
   10. Output instructions always return markdown response also don't give any extra information.
 
-Remember, your goal is to provide the most helpful, accurate, and comprehensive answer possible based on the user's query and any provided context.`;
+
+Remember, your goal is to provide the most helpful, accurate, and comprehensive answer possible based on the user's query and any provided context.
+
+`;
 
 export const getPrompt = (type: string) => {
   let role = type === "general" ? chatWithContext : ProgrammingExpert;
@@ -103,7 +102,8 @@ export const getPrompt = (type: string) => {
 };
 
 export async function createHistory(history: any[]) {
-  return history.map((item) => {
+  return history.map((item,index:number) => {
+    if(index > 10) return;
     if (item.type === "user") {
       return new HumanMessage(item.content);
     } else {

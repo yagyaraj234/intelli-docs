@@ -41,7 +41,6 @@ export const generate = async (req: Request, res: Response) => {
       message,
       workspaceId
     );
-    console.log("context", context);
 
     const response = await chain.stream({
       input: message,

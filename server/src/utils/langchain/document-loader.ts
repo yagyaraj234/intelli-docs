@@ -8,6 +8,7 @@ import { jinaEmbed } from "./emedding";
 export const jinaLoader = async (
   path: string,
   pineconeInstance: any,
+  id:string,
   name?: string,
   workspaceId?: string
 ): Promise<any> => {
@@ -22,7 +23,7 @@ export const jinaLoader = async (
   const chunkedDocs = await splitter.splitText(text);
 
   const docs = chunkedDocs.map((chunk: any, index: number) => {
-    const id = Math.random().toString(36).substring(7);
+    // const id = Math.random().toString(36).substring(7);
     return {
       pageContent: chunk,
       text: chunk,

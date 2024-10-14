@@ -7,6 +7,7 @@ import { ApiSuccess } from "../utils/response/success";
 import { workspaceSchema } from "../types/zod-schema";
 import { uploadFile, deleteDoc } from "../utils/storage/storage";
 import { jinaLoader } from "../utils/langchain/document-loader";
+import { deleteFromPinecone } from "../utils/langchain/emedding";
 
 export const generateId = () => {
   return Math.random().toString(36).substr(2, 9);
@@ -161,9 +162,16 @@ export const attachFile = async (req: Request, res: Response) => {
     );
     const results = await Promise.all(uploadPromises);
 
-    for (const result of results) {
-      await jinaLoader(result.url, pineconeInstance, result.name, id);
-    }
+
+    const embedPromise = results.map(async(element) => {
+      await jinaLoader(element.url,pineconeInstance,element.id,element.name,id)
+    });
+
+    // for (const result of results) {
+    //   await jinaLoader(result.url, pineconeInstance, result.name, id);
+    // }
+
+    await Promise.all(embedPromise)
 
     const ref = await db
       .collection("users")
@@ -208,6 +216,7 @@ export const deleteFile = async (req: Request, res: Response) => {
     const { files } = (await doc.data()) || { files: [] };
 
     const fileName = files.find((file: any) => file.id === fileId).name;
+    await deleteFromPinecone(pineconeInstance,fileId)
     await deleteDoc(`${uid}/${fileName}`);
 
     const updatedFiles = files.filter((file: any) => file.id !== fileId);

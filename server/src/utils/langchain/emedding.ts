@@ -62,3 +62,15 @@ export async function retrieveFromVectorStore(
     throw new Error("Something went wrong while retrieving from vector store!");
   }
 }
+
+export const deleteFromPinecone = async (client:PineconeClient,id: string) => {
+  try {
+    const index = client.Index(process.env.PINECONE_INDEX_NAME!);
+    await index.deleteMany({
+      doc_id: id
+    })
+  } catch (error) {
+    console.log("error ", error);
+    throw new Error("Something went wrong while deleting from pinecone!");
+  }
+};
